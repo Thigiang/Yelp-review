@@ -2,128 +2,95 @@ import requests
 import json
 import csv
 import time
-"""
-Get business's info. to obtain business id
-"""
-def business(offset, location):
-    url="https://api.yelp.com/v3/businesses/search"
-    api_key="Aefw4e0ZaUbkZruvRo7XWccAcnDK6rV4xQoZZdVHkGVoKrBGSz2p4wsZb2yZJQU2O7UoowxU1BT-wP3t2QXd48v6VSbc6xp30E5lTwsOVWKq1buQCCK9_hQBUYcaZHYx"
-    headers={"accept":"application/json","Authorization": "Bearer "+api_key}
-    params={"term":"restaurant","location":location, "limit":"25","offset": offset}
-    businesses=requests.get(url, headers=headers, params=params)
-    if not businesses.ok:
-        print("error")
-        print(businesses.text)
-    return businesses.json()
 
-def review(id):
-    url = "https://api.yelp.com/v3/businesses/"
-    end_point="/reviews"
-    api_key="Aefw4e0ZaUbkZruvRo7XWccAcnDK6rV4xQoZZdVHkGVoKrBGSz2p4wsZb2yZJQU2O7UoowxU1BT-wP3t2QXd48v6VSbc6xp30E5lTwsOVWKq1buQCCK9_hQBUYcaZHYx"
-    id=id
-    headers={
-        "accept": "application/json",
-        "Authorization": "Bearer "+api_key
-    }
-    params={"limit": "10"}
-    reviews=requests.get(url+id+end_point, headers=headers, params=params)
-    if not reviews.ok:
-        # print("Error")
-        return reviews.json()
-        pass
-    return reviews.json()
+class Yelp:
+    def __init__(self, location, api_key):
+        self.__location=location
+        self.__api_key=api_key
+        self.__url="https://api.yelp.com/v3/"
+        self.__location=location
+    
+    def get_business_per_loc(self, location):
+        url=self.__url + "businesses/search"
+        headers={"accept":"application/json","Authorization": "Bearer "+self.__api_key}
+        offset_range=[i for i in range(0,1000, 50)]
+        businesses=[]
+        for offset in offset_range:
+            params={"term":"restaurant","location":location, "limit":"50","offset": offset}
+            business=requests.get(url, headers=headers, params=params)
+            if not business.ok:
+                print("error")
+                print(business.text)
+            res = business.json()["businesses"]
+            businesses.extend(res)
+        return businesses
+
+
+    def get_buss_all_loc(self):
+        all_buss=[]
+        for city in self.__location:
+            all_buss.extend(self.get_business_per_loc(city))
+            time.sleep(1)
+        return all_buss
+
+    def get_all_buss_ids(self):
+        all_bus_id=[]
+        all_buss=self.get_buss_all_loc()
+        for buss in all_buss:
+            all_bus_id.append(buss["id"])
+        return all_bus_id
+
+
+    def get_review_for_buss(self,buss_id):
+        url=self.__url +"businesses/"+buss_id+"/reviews"
+        headers={"accept": "application/json",
+            "Authorization": "Bearer "+self.__api_key}
+        params={"limit": "3"}
+        reviews=requests.get(url, headers=headers, params=params)
+        if not reviews.ok:
+            print("error",reviews.text)
+            return []
+        else:    
+            content=[]
+            result=reviews.json()
+            if "reviews" in result:
+                for res in result["reviews"]:
+                    content.append((res["text"],res["rating"]))
+            return content
+
+    def get_all_reviews(self):
+        all_bus_ids=self.get_all_buss_ids()
+        all_reviews=[]
+        for bus_id in all_bus_ids:
+            all_reviews.extend(self.get_review_for_buss(bus_id))
+        return all_reviews
+
+
+"""
+location contains most of the cities in Bay Area
+"""
+api_key="Aefw4e0ZaUbkZruvRo7XWccAcnDK6rV4xQoZZdVHkGVoKrBGSz2p4wsZb2yZJQU2O7UoowxU1BT-wP3t2QXd48v6VSbc6xp30E5lTwsOVWKq1buQCCK9_hQBUYcaZHYx"
 # location=[
 #     "San Jose City", "San Francisco City","Mountain View City",
 #     "Fremont City", "Palo Alto City","Oakland City", "Berkeley City",
 #     "San Mateo City", "Redwood City","Sunnyvale City",
 #     "Pleasanton City","Hayward City","Dublin City"
 # ]
-location=["Hayward City"]
-print(location)
-# stt=0
-stt=7456
-for city in location:
-    offset_range=[0,100,400,700,1000]
-    All_bus_id=[]
-    for i in range(len(offset_range)-1):
-        offset=offset_range[i]
-        business_id=[]
-        while offset < offset_range[i+1]:
-            busi_subset=business(offset, city)
-            for res in busi_subset['businesses']:
-                business_id.append(res['id'])
-            offset += 25
-        All_bus_id.append(business_id)
-    for j in range(len(All_bus_id)):
-        content=[]
-        business_id=All_bus_id[j]
-        for idx in range(len(business_id)):
-            subre=review(business_id[idx])
-            if list(subre.keys())[0]!="reviews":
-                pass
-            else:
-                for rev in subre["reviews"]:
-                    stt+=1
-                    content.append([stt,rev["text"],rev["rating"]])
-        # if j == 0 and city == location[0]:
-        #     with open("big_data.csv",'w') as file:
-        #         writer=csv.writer(file)
-        #         writer.writerows(content)
-        # else:
-        #     with open("big_data.csv",'a') as file:
-        #         writer=csv.writer(file)
-        #         writer.writerows(content)
-        with open("big_data.csv",'a') as file:
+class Save:
+    def __init__(self,content,name):
+        self.__content=content
+        self.__name=name
+    def save_as_csv_w(self):
+        with open(self.__name,'w') as file:
             writer=csv.writer(file)
-            writer.writerows(content)
-        time.sleep(30)
-    time.sleep(45)
-
-
-# print(len(All_bus_id[0]),len(All_bus_id[1]),len(All_bus_id[2]),len(All_bus_id[3]))
-# offset=400
-# business_id=[]
-# while offset < 700:
-#     busi_subset=business(offset)
-#     for res in busi_subset['businesses']:
-#         business_id.append(res['id'])
-#     offset += 25
-# print(len(business_id))
-
-
-
-
-# test=review(business_id[0])
-# content=[]
-# for rev in test["reviews"]:
-#     content.append([rev["text"],rev["rating"]])
-# print(content)
-
-
-# stt=2072
-# All_content=[]
-# for i in range(1):
-#     content=[]
-#     business_id=All_bus_id[3]
-#     for idx in range(len(business_id)):
-#         subre=review(business_id[idx])
-#         if list(subre.keys())[0]!="reviews":
-#             pass
-#         else:
-#             for rev in subre["reviews"]:
-#                 stt+=1
-#                 content.append([stt,rev["text"],rev["rating"]])
-                # All_content.append(content)
-
-# print(len(content))
-# with open("data_Fremont.csv",'w') as file:
-#     writer=csv.writer(file)
-#     writer.writerows(content)
-# with open("data_Fremont.csv",'a') as file:
-#     writer=csv.writer(file)
-#     writer.writerows(content)
-
-
-
-
-
+            writer.writerows(self.__content)
+    def save_as_csv_a(self):
+        with open(self.__name,'a') as file:
+            writer=csv.writer(file)
+            writer.writerows(self.__content)
+location=["Fremont City"]
+yelp=Yelp(location, api_key)
+reviews = yelp.get_all_reviews()
+save_review=Save(reviews, name="Yelp_data.csv")
+# save_review.save_as_csv_w()
+save_review.save_as_csv_a()
