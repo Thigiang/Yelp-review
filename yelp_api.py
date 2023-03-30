@@ -8,7 +8,6 @@ class Yelp:
         self.__location=location
         self.__api_key=api_key
         self.__url="https://api.yelp.com/v3/"
-        self.__location=location
     
     def get_business_per_loc(self, location):
         url=self.__url + "businesses/search"
@@ -88,7 +87,7 @@ class Save:
         with open(self.__name,'a') as file:
             writer=csv.writer(file)
             writer.writerows(self.__content)
-location=["Fremont City"]
+location=["Sunnyvale City"]
 yelp=Yelp(location, api_key)
 reviews = yelp.get_all_reviews()
 save_review=Save(reviews, name="Yelp_data.csv")
