@@ -121,4 +121,4 @@ review=Text_preprocessing(data["reviews"]).remove_stop_words(stop_words)
 Text_plot(data, review).wordcloud("WorldCloud for all ratings after removing stopwords")
 subset_review(data,"remove",stop_words)
 
-
+print(review)
