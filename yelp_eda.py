@@ -10,7 +10,7 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.chunk import RegexpParser
 from nltk.tree import tree
-
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 class Yelp_eda:
     def __init__(self,data):
         self.__data=data
@@ -31,7 +31,7 @@ class Yelp_eda:
     def plot_subwordcloud(self, sentence_type, stop_words):
         numsub=len(np.unique(self.__data["rating"]))
         for i in range(1,numsub+1):
-            review=self.__data["reviews"][data['rating']==i]
+            review=self.__data["reviews"][self.__data['rating']==i]
             if sentence_type=="token":
                 subreview=self.prepro_token(reviews=review)
             elif sentence_type=="remove":
@@ -74,6 +74,7 @@ Feature Extraction using BoW and TF-IDF
 """
 
 class Yelp_featuresextr:
+    from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
     def __init__(self, features):
         self.__features=features
     def BoW(self):

@@ -87,9 +87,15 @@ class Save:
         with open(self.__name,'a') as file:
             writer=csv.writer(file)
             writer.writerows(self.__content)
-location=["Sunnyvale City"]
+location=["Dublin City"]
 yelp=Yelp(location, api_key)
 reviews = yelp.get_all_reviews()
-save_review=Save(reviews, name="Yelp_data.csv")
+# save_review=Save(reviews, name="Yelp_data.csv")
 # save_review.save_as_csv_w()
-save_review.save_as_csv_a()
+# save_review.save_as_csv_a()
+
+"""
+Generating test data
+"""
+save_review=Save(reviews, name="Yelp_testdata.csv")
+save_review.save_as_csv_w()
