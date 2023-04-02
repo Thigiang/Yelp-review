@@ -75,21 +75,24 @@ Feature Extraction using BoW and TF-IDF
 
 class Yelp_featuresextr:
     from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-    def __init__(self, features):
-        self.__features=features
+    def __init__(self, Xtr, Xtst):
+        self.__Xtr=Xtr
+        self.__Xtst=Xtst
     def BoW(self):
         BoW_vectorizer=CountVectorizer()
-        BoW_features=BoW_vectorizer.fit_transform(self.__features)
-        return BoW_features
+        Xtr=BoW_vectorizer.fit_transform(self.__Xtr)
+        Xtst=BoW_vectorizer.transform(self.__Xtst)
+        return Xtr, Xtst
     def Tfidf(self):
         tfidf_vectorizer=TfidfVectorizer()
-        tfidf_features=tfidf_vectorizer.fit_transform(self.__features)
-        return tfidf_features
+        Xtr=tfidf_vectorizer.fit_transform(self.__Xtr)
+        Xtst=tfidf_vectorizer.transform(self.__Xtst)
+        return Xtr, Xtst
     def combined(self):
-        BoW_features=self.BoW()
-        tfidf_features=self.Tfidf()
-        combined_features=BoW_features.multiply(tfidf_features)
-        return combined_features
+        Xtr_BoW, Xtst_BoW=self.BoW()
+        Xtr_Tfidf, Xtst_Tfidf=self.Tfidf()
+        Xtr_combined, Xtst_combined=Xtr_BoW.multiply(Xtr_Tfidf), Xtst_BoW.multiply(Xtst_Tfidf)
+        return Xtr_combined, Xtst_combined
 
 
 
