@@ -2,7 +2,7 @@ import requests
 import json
 import csv
 import time
-
+from key import secret_key
 class Yelp:
     def __init__(self, location, api_key):
         self.__location=location
@@ -68,7 +68,7 @@ class Yelp:
 """
 location contains most of the cities in Bay Area
 """
-api_key="Aefw4e0ZaUbkZruvRo7XWccAcnDK6rV4xQoZZdVHkGVoKrBGSz2p4wsZb2yZJQU2O7UoowxU1BT-wP3t2QXd48v6VSbc6xp30E5lTwsOVWKq1buQCCK9_hQBUYcaZHYx"
+api_key=secret_key
 # location=[
 #     "San Jose City", "San Francisco City","Mountain View City",
 #     "Fremont City", "Palo Alto City","Oakland City", "Berkeley City",
